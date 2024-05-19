@@ -68,6 +68,25 @@ GROUP BY location
 Order By TotalCOVDeaths DESC
 
 
+-- Using CTE to perform Calculation on Partition By in previous query
+
+With PopvsVac (Continent, Location, Date, Population, New_Vaccinations, RollingPeopleVaccinated)
+as
+(
+Select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
+, SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by dea.Location Order by dea.location, dea.Date) as RollingPeopleVaccinated
+--, (RollingPeopleVaccinated/population)*100
+From PortfolioProject1..CovidDeaths dea
+Join PortfolioProject1..CovidVaccinations vac
+	On dea.location = vac.location
+	and dea.date = vac.date
+where dea.continent is not null 
+--order by 2,3
+)
+
+Select *, (RollingPeopleVaccinated/Population)*100
+From PopvsVac
+
 
 -- Inner Joined tables
 -- Using TEMPORARY TABLE, to showcase use of inner created table
@@ -114,5 +133,7 @@ From PortfolioProject1..CovidDeaths
 Where continent is   NULL
 Group by location, population
 
-
+SELECT *
+FROM COVIDDeathRate
+ORDER BY population DESC
 
